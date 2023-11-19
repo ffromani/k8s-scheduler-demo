@@ -3,6 +3,7 @@ module github.com/ffromani/k8s-scheduler-demo
 go 1.20
 
 require (
+	github.com/dustin/go-humanize v1.0.0
 	k8s.io/api v0.27.8
 	k8s.io/apimachinery v0.27.8
 	k8s.io/component-base v0.27.8

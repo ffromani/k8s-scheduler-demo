@@ -61,5 +61,6 @@ func (dm *Demo) Filter(ctx context.Context, cycleState *framework.CycleState, po
 		return framework.NewStatus(framework.Error, "node not found")
 	}
 
+	checkRequest(computePodResourceRequest(pod), nodeInfo)
 	return nil // must never fail
 }
