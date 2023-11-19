@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "secondary-scheduler"
+  namespace: demo-scheduler
+  labels:
+    app: "secondary-scheduler"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "secondary-scheduler"
+  template:
+    metadata:
+      labels:
+        app: "secondary-scheduler"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: Exists
+      volumes:
+        - name: "etckubernetes"
+          configMap:
+            name: ${CONFIGMAP}
+      restartPolicy: "Always"
+      containers:
+        - name: "secondary-scheduler"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          image: ${IMAGE}
+          resources:
+            limits:
+              cpu: "600m"
+              memory: "1200Mi"
+            requests:
+              cpu: "600m"
+              memory: "1200Mi"
+          command:
+            - /bin/kube-scheduler
+          args:
+            - --config=/etc/kubernetes/config.yaml
+          volumeMounts:
+            - mountPath: "/etc/kubernetes"
+              name: "etckubernetes"
+      serviceAccountName: "secondary-scheduler"
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+      volumes:
+      - name: "etckubernetes" # placeholder
+
